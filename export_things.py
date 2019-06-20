@@ -15,7 +15,6 @@ Database Structure:
 
 """
 
-
 def export(database):
 
     logging.basicConfig(filename='export.log', level=logging.DEBUG)
@@ -174,11 +173,22 @@ class Task(RowObject):
                 self.print_notes()
 
             if self.checkListItemsCount:
-                pass  # TODO: process checklistItems
+                c = self.con.cursor()
+                for row in c.execute(CheckListItem.items_of_task % self.uuid):
+                    ci = CheckListItem(row, self.con, self.level + 1)
+                    ci.export()
 
 
 class CheckListItem(RowObject):
-    pass
+    items_of_task = """
+        SELECT uuid, title, status
+        FROM TMChecklistItem
+        WHERE task = '%s'
+        ORDER BY "index"
+    """
+
+    def export(self):
+        print(Task.TASK_TEMPLATE % self)
 
 
 if __name__ == "__main__":
