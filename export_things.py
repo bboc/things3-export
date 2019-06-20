@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import re
 import sys
 import logging
 
@@ -13,7 +14,6 @@ Database Structure:
 - some tasks have checklists (which consit of TMChecklistitems)
 
 """
-
 
 def export(database):
 
@@ -53,8 +53,19 @@ class RowObject(object):
         return self.indent_(self.level)
 
     @property
-    def note_indent(self):
+    def notes_indent(self):
         return self.indent_(self.level + 1)
+
+    URL = re.compile("\<a href=\"(?P<url>.*)?\"\>.*?\<\/a\>")
+
+    def print_notes(self):
+        notes = self.notes[27:-7]
+
+        def repl_url(m):
+            return m.group('url')
+        for line in notes.split("\n"):
+            line = self.URL.sub(repl_url, line)
+            print('%s%s' % (self.notes_indent, line))
 
 
 class Area(RowObject):
@@ -111,7 +122,7 @@ class Project(RowObject):
 
 class Task(RowObject):
     tasks_in_project = """
-        SELECT uuid, status, title, type, notes, area
+        SELECT uuid, status, title, type, notes, area, checklistItemsCount
         FROM TMTask
         WHERE type != 1 -- find tasks and action groups
         AND project="%s"
@@ -121,7 +132,7 @@ class Task(RowObject):
     """
 
     tasks_in_action_groups = """
-        SELECT uuid, status, title, type, notes, area
+        SELECT uuid, status, title, type, notes, area, checklistItemsCount
         FROM TMTask
         WHERE type = 0
         AND actionGroup="%s"
@@ -131,7 +142,7 @@ class Task(RowObject):
     """
     ACTIONGROUP = 2
     TASK_TEMPLATE = '%(indent)s- %(title)s'
-    ACTIONGROUP_TEMPLATE = '%(indent)s%(title)s (%(uuid)s):'
+    ACTIONGROUP_TEMPLATE = '%(indent)s%(title)s:'
 
     def export(self):
         logging.debug("Task: %s (%s) Level: %s Status: %s Type: %s", self.title, self.uuid, self.level, self.status, self.type)
@@ -145,8 +156,14 @@ class Task(RowObject):
         else:
             print(self.TASK_TEMPLATE % self)
             if self.notes:
-                print(self.notes)  # TODO: convert notes
-            # TODO: convert checklists
+                self.print_notes()
+
+            if self.checkListItemsCount:
+                pass  # TODO: process checklistItems
+
+
+class CheckListItem(RowObject):
+    pass
 
 
 if __name__ == "__main__":
