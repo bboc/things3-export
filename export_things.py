@@ -18,7 +18,7 @@ Database Structure:
 
 def export(database):
 
-    logging.basicConfig(filename='export.log', level=logging.DEBUG)
+    logging.basicConfig(filename='export.log', level=logging.ERROR)
 
     con = sqlite3.connect(database)
 
