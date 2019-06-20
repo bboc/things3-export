@@ -15,6 +15,7 @@ Database Structure:
 
 """
 
+
 def export(database):
 
     logging.basicConfig(filename='export.log', level=logging.DEBUG)
@@ -65,6 +66,12 @@ class RowObject(object):
         for line in notes.split("\n"):
             line = self.URL.sub(lambda m: m.group('url'), line)
             print('%s%s' % (self.notes_indent, line))
+
+    def find_and_export_items(self, klass, query):
+        c = self.con.cursor()
+        for row in c.execute(query):
+            item = klass(row, self.con, self.level + 1)
+            item.export()
 
 
 class Area(RowObject):
@@ -127,10 +134,9 @@ class Project(RowObject):
         print(self.PROJECT_TEMPLATE % self)
         if self.notes:
             self.print_notes()
-        c = self.con.cursor()
-        for row in c.execute(Task.tasks_in_project % self.uuid):
-            t = Task(row, self.con, self.level + 1)
-            t.export()
+
+        self.find_and_export_items(Task, Task.tasks_in_project % self.uuid)
+
         sys.stdout = sys.__stdout__
 
 
@@ -163,20 +169,14 @@ class Task(RowObject):
         if self.type == self.ACTIONGROUP:
             # process action group (which have no notes!)
             print(self.ACTIONGROUP_TEMPLATE % self)
-            c = self.con.cursor()
-            for row in c.execute(Task.tasks_in_action_groups % self.uuid):
-                t = Task(row, self.con, self.level + 1)
-                t.export()
+            self.find_and_export_items(Task, Task.tasks_in_action_groups % self.uuid)
         else:
             print(self.TASK_TEMPLATE % self)
             if self.notes:
                 self.print_notes()
 
             if self.checkListItemsCount:
-                c = self.con.cursor()
-                for row in c.execute(CheckListItem.items_of_task % self.uuid):
-                    ci = CheckListItem(row, self.con, self.level + 1)
-                    ci.export()
+                self.find_and_export_items(CheckListItem, CheckListItem.items_of_task % self.uuid)
 
 
 class CheckListItem(RowObject):
