@@ -139,7 +139,7 @@ class Task(RowObject):
             # process action group (which have no notes!)
             print(self.ACTIONGROUP_TEMPLATE % self)
             c = self.con.cursor()
-            for row in c.execute(Task.tasks_in_project % self.uuid):
+            for row in c.execute(Task.tasks_in_action_groups % self.uuid):
                 t = Task(row, self.con, self.level + 1)
                 t.export()
         else:
