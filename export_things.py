@@ -1,10 +1,14 @@
-import sqlite3
+import argparse
 import os
 import re
+import sqlite3
 import sys
 import logging
 
 """
+Export Things 3 database to TaskPaper files
+
+Things 3 database is typically at ~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/Things.sqlite3
 
 Database Structure:
 
@@ -16,28 +20,30 @@ Database Structure:
 """
 
 
-def export(database):
+def export(args):
 
     logging.basicConfig(filename='export.log', level=logging.ERROR)
 
-    con = sqlite3.connect(database)
+    con = sqlite3.connect(args.database)
 
     con.row_factory = sqlite3.Row
 
     c = con.cursor()
-    no_area = Area(dict(uuid='NULL', title='no area'), con)
+    no_area = Area(dict(uuid='NULL', title='no area'), con, args)
     no_area.export()
     for row in c.execute(Area.query):
-        a = Area(row, con)
+        a = Area(row, con, args)
         a.export()
     con.close()
 
 
 class RowObject(object):
+    PROJECT_TEMPLATE = "\n%(indent)s%(title)s:"
 
-    def __init__(self, row, con, level=0):
+    def __init__(self, row, con, args, level=0):
         self.row = row
         self.con = con
+        self.args = args
         self.level = level
 
     def __getattr__(self, name):
@@ -70,22 +76,40 @@ class RowObject(object):
     def find_and_export_items(self, klass, query):
         c = self.con.cursor()
         for row in c.execute(query):
-            item = klass(row, self.con, self.level + 1)
+            item = klass(row, self.con, self.args, self.level + 1)
             item.export()
+
+    FILE_TMPL = "%s.taskpaper"
+
+    def reroute_stdout(self, path_prefix):
+        filename = self.FILE_TMPL % self.title
+        filename = filename.replace(r'/', '|')
+        if path_prefix:
+            filename = os.path.join(path_prefix, filename)
+        sys.stdout = open(filename, 'w')
+
+    def makedirs(self):
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
 
 
 class Area(RowObject):
     query = """
-        select uuid, title from TMArea order by "index";
+        SELECT uuid, title FROM TMArea ORDER BY "index";
     """
 
     def export(self):
-        # TODO: add switch to skip creating folder and just emit the name
         logging.debug("Area: %s (%s)", self.title, self.uuid)
-        self.path = os.path.join('export_data', self.title)
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
 
+        if self.args.combine:
+            # reroute stdout to a file for this area
+            self.path = self.args.target
+            self.makedirs()
+            self.reroute_stdout(self.args.target)
+        else:
+            # set path and make folder for area
+            self.path = os.path.join(self.args.target, self.title)
+            self.makedirs()
         c = self.con.cursor()
 
         if self.uuid == 'NULL':
@@ -94,8 +118,11 @@ class Area(RowObject):
             query = Project.projects_in_area % self.uuid
 
         for row in c.execute(query):
-            p = Project(row, self.con, 0, self)
+            p = Project(row, self.con, self.args, 0, self)
             p.export()
+
+        if self.args.combine:
+            sys.stdout = sys.__stdout__
 
 
 class Project(RowObject):
@@ -117,19 +144,16 @@ class Project(RowObject):
         AND status < 2 -- not canceled
         ORDER BY "index";
     """
-    PROJECT_TEMPLATE = "\n%(indent)s%(title)s:"
-    FILE_TMPL = "%s.taskpaper"
 
-    def __init__(self, row, con, level, area):
-        super().__init__(row, con, level)
+    def __init__(self, row, con, args, level, area):
+        super().__init__(row, con, args, level)
         self.area = area
 
     def export(self):
         logging.debug("Project: %s (%s)", self.title, self.uuid)
-        filename = self.FILE_TMPL % self.title
-        filename = filename.replace(r'/', '|')
 
-        sys.stdout = open(os.path.join(self.area.path, filename), 'w')
+        if not self.args.combine:
+            self.reroute_stdout(self.area.path)
 
         print(self.PROJECT_TEMPLATE % self)
         if self.notes:
@@ -137,7 +161,8 @@ class Project(RowObject):
 
         self.find_and_export_items(Task, Task.tasks_in_project % self.uuid)
 
-        sys.stdout = sys.__stdout__
+        if not self.args.combine:
+            sys.stdout = sys.__stdout__
 
 
 class Task(RowObject):
@@ -192,8 +217,20 @@ class CheckListItem(RowObject):
 
 
 if __name__ == "__main__":
-    # TODO: use real location of database?
-    # TODO: add argument parser: path to output, optional path to database, switch to file output or stdout
-    # things_db = "~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/Things.sqlite3"
-    things_db = 'Things.sqlite3'
-    export(things_db)
+
+    parser = argparse.ArgumentParser(description='Export tasks from Things3 database to TaskPaper.')
+    parser.add_argument('--target', dest='target', action='store',
+                        default='export_data',
+                        help='output folder (default: export_data')
+    parser.add_argument('--db', dest='database', action='store',
+                        default='Things.sqlite3',
+                        help='path to the Things3 database (default: Things.sqlite3)')
+    parser.add_argument('--combine', dest='combine', action='store_true',
+                        default=False,
+                        help='combine projects of each area into one file (default: one separate file per project')
+    parser.add_argument('--stdout', dest='stdout', action='store_true',
+                        default=False,
+                        help='to standard output instead of file (overrides combine, default: write to file)')
+
+    args = parser.parse_args()
+    export(args)
