@@ -15,6 +15,7 @@ Database Structure:
 
 """
 
+
 def export(database):
 
     logging.basicConfig(filename='export.log', level=logging.DEBUG)
@@ -24,6 +25,8 @@ def export(database):
     con.row_factory = sqlite3.Row
 
     c = con.cursor()
+    no_area = Area(dict(uuid='NULL', title='no area'), con)
+    no_area.export()
     for row in c.execute(Area.query):
         a = Area(row, con)
         a.export()
@@ -60,11 +63,8 @@ class RowObject(object):
 
     def print_notes(self):
         notes = self.notes[27:-7]
-
-        def repl_url(m):
-            return m.group('url')
         for line in notes.split("\n"):
-            line = self.URL.sub(repl_url, line)
+            line = self.URL.sub(lambda m: m.group('url'), line)
             print('%s%s' % (self.notes_indent, line))
 
 
@@ -81,7 +81,13 @@ class Area(RowObject):
             os.makedirs(self.path)
 
         c = self.con.cursor()
-        for row in c.execute(Project.projects_in_area % self.uuid):
+
+        if self.uuid == 'NULL':
+            query = Project.projects_without_area
+        else:
+            query = Project.projects_in_area % self.uuid
+
+        for row in c.execute(query):
             p = Project(row, self.con, 0, self)
             p.export()
 
@@ -95,7 +101,15 @@ class Project(RowObject):
         AND trashed = 0
         AND status < 2 -- not canceled
         ORDER BY "index";
-
+    """
+    projects_without_area = """
+        SELECT uuid, status, title, type, notes, area
+        FROM TMTask
+        WHERE type=1
+        AND area is NULL
+        AND trashed = 0
+        AND status < 2 -- not canceled
+        ORDER BY "index";
     """
     PROJECT_TEMPLATE = "\n%(indent)s%(title)s:"
     FILE_TMPL = "%s.taskpaper"
@@ -112,7 +126,8 @@ class Project(RowObject):
         sys.stdout = open(os.path.join(self.area.path, filename), 'w')
 
         print(self.PROJECT_TEMPLATE % self)
-        # TODO: add note
+        if self.notes:
+            self.print_notes()
         c = self.con.cursor()
         for row in c.execute(Task.tasks_in_project % self.uuid):
             t = Task(row, self.con, self.level + 1)
@@ -167,5 +182,7 @@ class CheckListItem(RowObject):
 
 
 if __name__ == "__main__":
+    # TODO: use real location of database?
+    # TODO: add argument parser: path to output, optional path to database, switch to file output or stdout
     things_db = "~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/Things.sqlite3"
     export('Things.sqlite3')
