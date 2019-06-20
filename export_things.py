@@ -194,5 +194,6 @@ class CheckListItem(RowObject):
 if __name__ == "__main__":
     # TODO: use real location of database?
     # TODO: add argument parser: path to output, optional path to database, switch to file output or stdout
-    things_db = "~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/Things.sqlite3"
-    export('Things.sqlite3')
+    # things_db = "~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/Things.sqlite3"
+    things_db = 'Things.sqlite3'
+    export(things_db)
