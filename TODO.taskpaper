@@ -7,6 +7,6 @@ Features:
 	- export tasks in areas without a project @done
 Tests:
 	- create an test database @done
-	- check export of test database
-	- check for bugs (mainly accidental export of done items, database has 30 items, 5 of which are done)
-	- add autmated test runs export and compares to test export
+	- check in export of test database @done
+	- check for bugs (mainly accidental export of done items, database has 30 items, 5 of which are done) @done
+	- add automated test runs export and compares to test export
