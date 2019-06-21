@@ -28,6 +28,10 @@ If you prefer one TaskPaper file per area, you can add the option `--combine`, i
 
 `$ source t2tp.sh --stdout >all-my-tasks.taskpaper`
 
+## Restore a database backup in Things 3
+
+If you, like me, play around with your Things database and accidentally sync a lot of changes to the Things cloud, [here's how to restore a backup database](https://support.culturedcode.com/customer/en/portal/articles/2803595-restoring-from-a-backup)
+
 
 
 
