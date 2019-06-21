@@ -44,7 +44,7 @@ class RowObject(object):
         self.row = row
         self.con = con
         self.args = args
-        self.level = level
+        self.level = level 
 
     def __getattr__(self, name):
         return self.row[name]
@@ -67,7 +67,7 @@ class RowObject(object):
 
     @property
     def tags(self):
-        return ''  # tags are empty for most items
+        return ''  # tags are empty for some items
 
     URL = re.compile("\<a href=\"(?P<url>.*)?\"\>.*?\<\/a\>")
 
@@ -105,16 +105,27 @@ class RowObjectWithTags(RowObject):
         AND tt.tags = tag.uuid;
     """
 
+    def __init__(self, row, con, args, level=0):
+        super().__init__(row, con, args, level)
+        self._tags = []
+
     @property
     def tags(self):
+        if len(self._tags) == 0:
+            return ''
+        return ' ' + ' '.join(self._tags)
+
+    def add_tag(self, tag):
+        if tag not in self._tags:
+            self._tags.append(tag)
+
+    def load_tags_from_db(self):
         def make_tag(title):
             return '@' + title.replace(' ', '_').replace('-', '_')
 
         c = self.con.cursor()
-        tags = [make_tag(row['title']) for row in c.execute(self.TAGS_QUERY % self.uuid)]
-        if len(tags) == 0:
-            return ''
-        return ' ' + ' '.join(tags)
+        for row in c.execute(self.TAGS_QUERY % self.uuid):
+            self.add_tag(make_tag(row['title']))
 
 
 class Area(RowObjectWithTags):
@@ -130,6 +141,7 @@ class Area(RowObjectWithTags):
 
     def export(self):
         logging.debug("Area: %s (%s)", self.title, self.uuid)
+        self.load_tags_from_db()
         if self.args.stdout:
             next_level = 1
             print(self.PROJECT_TEMPLATE % self)
@@ -186,7 +198,7 @@ class Project(RowObjectWithTags):
 
     def export(self):
         logging.debug("Project: %s (%s)", self.title, self.uuid)
-
+        self.load_tags_from_db()
         if self.args.combine or self.args.stdout:
             print(self.PROJECT_TEMPLATE % self)
         else:
@@ -227,6 +239,7 @@ class Task(RowObjectWithTags):
 
     def export(self):
         logging.debug("Task: %s (%s) Level: %s Status: %s Type: %s", self.title, self.uuid, self.level, self.status, self.type)
+        self.load_tags_from_db()
         if self.type == self.ACTIONGROUP:
             # process action group (which have no notes!)
             print(self.ACTIONGROUP_TEMPLATE % self)
