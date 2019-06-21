@@ -5,6 +5,7 @@ Features:
 	- export someday flag @done
 	- export inbox items @done
 	- export tasks in areas without a project @done
+	- check if this can easily converted to Python 2 so it works with any Mac 
 Tests:
 	- create an test database @done
 	- check in export of test database @done
