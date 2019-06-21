@@ -132,7 +132,7 @@ class RowObjectWithTags(RowObject):
 class TaskObjects(RowObjectWithTags):
 
     task_fields = """
-        SELECT uuid, status, title, type, notes, area, dueDate, startDate, todayIndex, checklistItemsCount
+        SELECT uuid, status, title, type, notes, area, dueDate, startDate, todayIndex, checklistItemsCount, stopDate
         FROM TMTask
     """
 
@@ -140,16 +140,15 @@ class TaskObjects(RowObjectWithTags):
         """Add all attributes (due date, start date, today, someday etc.) as tags."""
         if self.dueDate:
             self.add_tag('@due(%s)' % datetime.fromtimestamp(self.dueDate).strftime("%Y-%m-%d"))
-        elif self.todayIndex:
+        if self.todayIndex:
             if self.startDate:
                 self.add_tag('@today')
             else:
                 self.add_tag('@someday')
-
         elif self.startDate:
             self.add_tag('@startDate(%s)' % datetime.fromtimestamp(self.startDate).strftime("%Y-%m-%d"))
-        else:
-            pass
+        if self.stopDate:
+            self.add_tag('@done(%s)' % datetime.fromtimestamp(self.stopDate).strftime("%Y-%m-%d"))
 
 
 class Area(RowObjectWithTags):
@@ -185,7 +184,7 @@ class Area(RowObjectWithTags):
 
         if self.uuid == 'NULL':
             inbox = Project(dict(uuid='NULL', title='Inbox',
-                                 dueDate=None, startDate=None, todayIndex=None, notes=None),
+                                 dueDate=None, startDate=None, stopDate=None, todayIndex=None, notes=None),
                             self.con, self.args, self.level + 1, self)
             inbox.export()
             query = Project.PROJECTS_WITHOUT_AREA
@@ -210,7 +209,6 @@ class Project(TaskObjects):
         ORDER BY "index";
     """
     PROJECTS_WITHOUT_AREA = TaskObjects.task_fields + """
-
         WHERE type=1
         AND area is NULL
         AND trashed = 0
