@@ -45,7 +45,7 @@ class RowObject(object):
         self.row = row
         self.con = con
         self.args = args
-        self.level = level 
+        self.level = level
 
     def __getattr__(self, name):
         return self.row[name]
