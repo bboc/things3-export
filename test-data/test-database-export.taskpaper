@@ -1,0 +1,50 @@
+
+no area:
+
+	Inbox:
+		- a task in my inbox
+
+	a free floating project: @foo
+		this project has a tag and a note
+		
+		- here's a task in this project
+		here's a heading:
+			- and another task with is tagged @bar
+			- this task is done
+			- this task has a checklist
+				- one
+				- two
+				- three
+				- 
+			- task with note
+				this is a note
+				with some lines
+				of text
+				
+		another headline:
+			- this task has a deadline @due(2019-07-02)
+			- task for today @today
+			- task for this evening @startDate(2019-06-21)
+			- task for a specific date @today
+			- a someday task @someday
+
+this is my area: @area_tag
+	- this is a task right inside an area
+
+	first project in area:
+		some notes
+		- task1
+		- task2
+
+	second project in area: @today
+		this one is set to "today"
+		- task in today project
+
+this is another area:
+	- 
+
+	a project:
+		- a taks that has it all @Errand @due(2019-07-09) @today
+			there's a note
+			- one
+			- two
