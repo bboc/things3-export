@@ -184,15 +184,13 @@ class Area(RowObjectWithTags):
         c = self.con.cursor()
 
         if self.uuid == 'NULL':
-            # TODO: list inbox items
-            inbox = Project(dict(uuid='NULL', 
-                                 title='Inbox',
-                                 dueDate = None, startDate=None, todayIndex=None,notes=None), self.con, self.args, self.level + 1, self )
+            inbox = Project(dict(uuid='NULL', title='Inbox',
+                                 dueDate=None, startDate=None, todayIndex=None, notes=None),
+                            self.con, self.args, self.level + 1, self)
             inbox.export()
-
             query = Project.PROJECTS_WITHOUT_AREA
         else:
-            # TODO: export tasks in this area without project
+            self.find_and_export_items(Task, Task.TASKS_IN_AREA_WITHOUT_PROJECT % self.uuid)
             query = Project.PROJECTS_IN_AREA % self.uuid
 
         for row in c.execute(query):
@@ -254,6 +252,14 @@ class Task(TaskObjects):
         AND status < 2 -- whatever "1" means
         ORDER BY type, "index"; -- tasks without headers come first
     """
+    TASKS_IN_AREA_WITHOUT_PROJECT = TaskObjects.task_fields + """
+        WHERE type != 1 -- find tasks and action groups
+        AND area="%s"
+        AND project is NULL
+        AND trashed = 0
+        AND status < 2 -- whatever "1" means
+        ORDER BY type, "index"; -- tasks without headers come first
+    """
     TASKS_IN_INBOX = TaskObjects.task_fields + """
         WHERE type != 1 -- find tasks and action groups
         AND project IS NULL
@@ -263,8 +269,7 @@ class Task(TaskObjects):
         AND status < 2 -- whatever "1" means
         ORDER BY "index";
     """
-
-    tasks_in_action_groups = TaskObjects.task_fields + """
+    TASKS_IN_ACTION_GROUPS = TaskObjects.task_fields + """
         WHERE type = 0
         AND actionGroup="%s"
         AND trashed = 0
@@ -282,7 +287,7 @@ class Task(TaskObjects):
         if self.type == self.ACTIONGROUP:
             # process action group (which have no notes!)
             print(self.ACTIONGROUP_TEMPLATE % self)
-            self.find_and_export_items(Task, Task.tasks_in_action_groups % self.uuid)
+            self.find_and_export_items(Task, Task.TASKS_IN_ACTION_GROUPS % self.uuid)
         else:
             print(self.TASK_TEMPLATE % self)
             if self.notes:
