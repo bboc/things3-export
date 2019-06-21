@@ -31,7 +31,7 @@ def export(args):
     c = con.cursor()
     no_area = Area(dict(uuid='NULL', title='no area'), con, args)
     no_area.export()
-    for row in c.execute(Area.query):
+    for row in c.execute(Area.QUERY):
         a = Area(row, con, args)
         a.export()
     con.close()
@@ -117,14 +117,19 @@ class RowObjectWithTags(RowObject):
         return ' ' + ' '.join(tags)
 
 
-class Area(RowObject):
-    query = """
+class Area(RowObjectWithTags):
+    QUERY = """
         SELECT uuid, title FROM TMArea ORDER BY "index";
+    """
+
+    TAGS_QUERY = """
+        SELECT tag.title AS title FROM TMAreaTag AS at, TMTag AS tag
+        WHERE at.areas = '%s'
+        AND at.tags = tag.uuid;
     """
 
     def export(self):
         logging.debug("Area: %s (%s)", self.title, self.uuid)
-        # TODO: get areaTags
         if self.args.stdout:
             next_level = 1
             print(self.PROJECT_TEMPLATE % self)

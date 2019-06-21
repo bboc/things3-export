@@ -1,6 +1,6 @@
 # things3-export
 
-Export Script for Things 3 (by Cultured Code): Convert all tasks in all projects to TaskPaper files. Headers and checklists are preserved, tags are ignored (for now).
+Export Script for Things 3 (by Cultured Code): Convert all tasks in all projects to TaskPaper files. Headers, checklists, notes and tags are preserved.
 
 I created this because I found that things is great for capturing tasks and reminders for stuff to do, but I am much more effective when I plan projects in TaskPaper. YMMV.
 
@@ -8,7 +8,7 @@ I created this because I found that things is great for capturing tasks and remi
 
 ### Work on the live database 
 
-It's probably a good idea to close things before you do that:
+It's definitely a good idea to close things before you do that:
 
 `$ source t2tp.sh`
 
@@ -24,7 +24,9 @@ to the location of the script, then run
 
 You will find all your tasks in a folder called `export data`, one TaskPaper file per project, areas are grouped in subfolders.
 
-If you prefer one TaskPaper file per area, you can add the option `--combine`
+If you prefer one TaskPaper file per area, you can add the option `--combine`, if you prefer one file with everything, just add `--stdout` and capture in a file, e.g.
+
+`$ source t2tp.sh --stdout >all-my-tasks.taskpaper`
 
 
 
