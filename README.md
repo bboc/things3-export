@@ -12,7 +12,7 @@ Currently, the exporter has the following features:
 - done and trashed items are excluded
 - due dates, start dates, today and someday are added as tags to projects and tasks
 
-Repeating tasks are currently not supported.
+Repeating tasks are currently not supported.The exporter was tested with Things 3.9
 
 By default, the exporter will create a folder for each area that contains a TaskPaper file per project. One file per area and one file with everything is also possible. To see what the exporter can do, open the Terminal app and run 
 
