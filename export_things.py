@@ -38,7 +38,7 @@ def export(args):
 
 
 class RowObject(object):
-    PROJECT_TEMPLATE = "\n%(indent)s%(title)s:"
+    PROJECT_TEMPLATE = "\n%(indent)s%(title)s:%(tags)s"
 
     def __init__(self, row, con, args, level=0):
         self.row = row
@@ -64,6 +64,10 @@ class RowObject(object):
     @property
     def notes_indent(self):
         return self.indent_(self.level + 1)
+
+    @property
+    def tags(self):
+        return ''  # tags are empty for most items
 
     URL = re.compile("\<a href=\"(?P<url>.*)?\"\>.*?\<\/a\>")
 
@@ -93,6 +97,26 @@ class RowObject(object):
             os.makedirs(self.path)
 
 
+class RowObjectWithTags(RowObject):
+
+    TAGS_QUERY = """
+        SELECT tag.title AS title FROM TMTaskTag AS tt, TMTag AS tag
+        WHERE tt.tasks = '%s'
+        AND tt.tags = tag.uuid;
+    """
+
+    @property
+    def tags(self):
+        def make_tag(title):
+            return '@' + title.replace(' ', '_').replace('-', '_')
+
+        c = self.con.cursor()
+        tags = [make_tag(row['title']) for row in c.execute(self.TAGS_QUERY % self.uuid)]
+        if len(tags) == 0:
+            return ''
+        return ' ' + ' '.join(tags)
+
+
 class Area(RowObject):
     query = """
         SELECT uuid, title FROM TMArea ORDER BY "index";
@@ -100,16 +124,22 @@ class Area(RowObject):
 
     def export(self):
         logging.debug("Area: %s (%s)", self.title, self.uuid)
-
-        if self.args.combine:
+        # TODO: get areaTags
+        if self.args.stdout:
+            next_level = 1
+            print(self.PROJECT_TEMPLATE % self)
+        elif self.args.combine:
             # reroute stdout to a file for this area
             self.path = self.args.target
             self.makedirs()
             self.reroute_stdout(self.args.target)
+            next_level = 0
         else:
             # set path and make folder for area
             self.path = os.path.join(self.args.target, self.title)
             self.makedirs()
+            next_level = 0
+
         c = self.con.cursor()
 
         if self.uuid == 'NULL':
@@ -118,14 +148,14 @@ class Area(RowObject):
             query = Project.projects_in_area % self.uuid
 
         for row in c.execute(query):
-            p = Project(row, self.con, self.args, 0, self)
+            p = Project(row, self.con, self.args, next_level, self)
             p.export()
 
         if self.args.combine:
             sys.stdout = sys.__stdout__
 
 
-class Project(RowObject):
+class Project(RowObjectWithTags):
     projects_in_area = """
         SELECT uuid, status, title, type, notes, area
         FROM TMTask
@@ -152,10 +182,11 @@ class Project(RowObject):
     def export(self):
         logging.debug("Project: %s (%s)", self.title, self.uuid)
 
-        if not self.args.combine:
+        if self.args.combine or self.args.stdout:
+            print(self.PROJECT_TEMPLATE % self)
+        else:
             self.reroute_stdout(self.area.path)
 
-        print(self.PROJECT_TEMPLATE % self)
         if self.notes:
             self.print_notes()
 
@@ -165,7 +196,7 @@ class Project(RowObject):
             sys.stdout = sys.__stdout__
 
 
-class Task(RowObject):
+class Task(RowObjectWithTags):
     tasks_in_project = """
         SELECT uuid, status, title, type, notes, area, checklistItemsCount
         FROM TMTask
@@ -186,7 +217,7 @@ class Task(RowObject):
         ORDER BY "index";
     """
     ACTIONGROUP = 2
-    TASK_TEMPLATE = '%(indent)s- %(title)s'
+    TASK_TEMPLATE = '%(indent)s- %(title)s%(tags)s'
     ACTIONGROUP_TEMPLATE = '%(indent)s%(title)s:'
 
     def export(self):
