@@ -1,9 +1,10 @@
 import argparse
+from datetime import datetime
+import logging
 import os
 import re
 import sqlite3
 import sys
-import logging
 
 """
 Export Things 3 database to TaskPaper files
@@ -128,6 +129,29 @@ class RowObjectWithTags(RowObject):
             self.add_tag(make_tag(row['title']))
 
 
+class TaskObjects(RowObjectWithTags):
+
+    task_fields = """
+        SELECT uuid, status, title, type, notes, area, dueDate, startDate, todayIndex, checklistItemsCount
+        FROM TMTask
+    """
+
+    def add_attributes(self):
+        """Add all attributes (due date, start date, today, someday etc.) as tags."""
+        if self.dueDate:
+            self.add_tag('@due(%s)' % datetime.fromtimestamp(self.dueDate).strftime("%Y-%m-%d"))
+        elif self.todayIndex:
+            if self.startDate:
+                self.add_tag('@today')
+            else:
+                self.add_tag('@someday')
+
+        elif self.startDate:
+            self.add_tag('@startDate(%s)' % datetime.fromtimestamp(self.startDate).strftime("%Y-%m-%d"))
+        else:
+            pass
+
+
 class Area(RowObjectWithTags):
     QUERY = """
         SELECT uuid, title FROM TMArea ORDER BY "index";
@@ -160,9 +184,16 @@ class Area(RowObjectWithTags):
         c = self.con.cursor()
 
         if self.uuid == 'NULL':
-            query = Project.projects_without_area
+            # TODO: list inbox items
+            inbox = Project(dict(uuid='NULL', 
+                                 title='Inbox',
+                                 dueDate = None, startDate=None, todayIndex=None,notes=None), self.con, self.args, self.level + 1, self )
+            inbox.export()
+
+            query = Project.PROJECTS_WITHOUT_AREA
         else:
-            query = Project.projects_in_area % self.uuid
+            # TODO: export tasks in this area without project
+            query = Project.PROJECTS_IN_AREA % self.uuid
 
         for row in c.execute(query):
             p = Project(row, self.con, self.args, next_level, self)
@@ -172,19 +203,16 @@ class Area(RowObjectWithTags):
             sys.stdout = sys.__stdout__
 
 
-class Project(RowObjectWithTags):
-    projects_in_area = """
-        SELECT uuid, status, title, type, notes, area
-        FROM TMTask
+class Project(TaskObjects):
+    PROJECTS_IN_AREA = TaskObjects.task_fields + """
         WHERE type=1
         AND area="%s"
         AND trashed = 0
         AND status < 2 -- not canceled
         ORDER BY "index";
     """
-    projects_without_area = """
-        SELECT uuid, status, title, type, notes, area
-        FROM TMTask
+    PROJECTS_WITHOUT_AREA = TaskObjects.task_fields + """
+
         WHERE type=1
         AND area is NULL
         AND trashed = 0
@@ -199,6 +227,7 @@ class Project(RowObjectWithTags):
     def export(self):
         logging.debug("Project: %s (%s)", self.title, self.uuid)
         self.load_tags_from_db()
+        self.add_attributes()
         if self.args.combine or self.args.stdout:
             print(self.PROJECT_TEMPLATE % self)
         else:
@@ -207,26 +236,35 @@ class Project(RowObjectWithTags):
         if self.notes:
             self.print_notes()
 
-        self.find_and_export_items(Task, Task.tasks_in_project % self.uuid)
+        if self.uuid == 'NULL':
+            self.find_and_export_items(Task, Task.TASKS_IN_INBOX)
+        else:
+            self.find_and_export_items(Task, Task.TASKS_IN_PROJECT % self.uuid)
 
         if not self.args.combine:
             sys.stdout = sys.__stdout__
 
 
-class Task(RowObjectWithTags):
-    tasks_in_project = """
-        SELECT uuid, status, title, type, notes, area, checklistItemsCount
-        FROM TMTask
+class Task(TaskObjects):
+
+    TASKS_IN_PROJECT = TaskObjects.task_fields + """
         WHERE type != 1 -- find tasks and action groups
         AND project="%s"
         AND trashed = 0
         AND status < 2 -- whatever "1" means
         ORDER BY type, "index"; -- tasks without headers come first
     """
+    TASKS_IN_INBOX = TaskObjects.task_fields + """
+        WHERE type != 1 -- find tasks and action groups
+        AND project IS NULL
+        AND area IS NULL
+        AND actionGroup IS NULL
+        AND trashed = 0
+        AND status < 2 -- whatever "1" means
+        ORDER BY "index";
+    """
 
-    tasks_in_action_groups = """
-        SELECT uuid, status, title, type, notes, area, checklistItemsCount
-        FROM TMTask
+    tasks_in_action_groups = TaskObjects.task_fields + """
         WHERE type = 0
         AND actionGroup="%s"
         AND trashed = 0
@@ -240,6 +278,7 @@ class Task(RowObjectWithTags):
     def export(self):
         logging.debug("Task: %s (%s) Level: %s Status: %s Type: %s", self.title, self.uuid, self.level, self.status, self.type)
         self.load_tags_from_db()
+        self.add_attributes()
         if self.type == self.ACTIONGROUP:
             # process action group (which have no notes!)
             print(self.ACTIONGROUP_TEMPLATE % self)
