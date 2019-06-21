@@ -1,8 +1,18 @@
-# things3-export
+# Export your Things 3 database to TaskPaper
 
-Export Script for Things 3 (by Cultured Code): Convert all tasks in all projects to TaskPaper files. Headers, checklists, notes and tags are preserved.
+Here's a simple tool to export from [Things 3 (by Cultured Code)](https://culturedcode.com/things/) to [TaskPaper](https://www.taskpaper.com).
 
-I created this because I found that things is great for capturing tasks and reminders for stuff to do, but I am much more effective when I plan projects in TaskPaper. YMMV.
+I created this because I found that Things is great for capturing tasks and reminders for stuff to do, but I am much more effective when I plan larger projects in TaskPaper or OmniFocus (where one can import TaskPaper files). YMMV.
+ 
+Currently, the exporter has the following features:
+
+- export tasks, projects (including the inbox) and areas 
+- headers, checklists, notes
+- tags for tasks, projects and areas
+- done and trashed items are excluded
+- due dates, start dates, today and someday are added as tags to projects and tasks
+
+Repeating tasks are currently not supported.
 
 ## Usage:
 
