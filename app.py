@@ -11,12 +11,11 @@ current directory.
 """
 
 from argparse import Namespace
-
 import logging
 import os
-import queue
-
 from pathlib import Path
+import queue
+from textwrap import dedent
 from tkinter import filedialog
 from tkinter import Tk
 from tkinter import Button
@@ -25,10 +24,11 @@ from tkinter import Frame
 from tkinter import Label
 from tkinter import LabelFrame
 from tkinter import StringVar
+from tkinter import SUNKEN
+from tkinter import Text
 from tkinter import Radiobutton
 from tkinter import N, NW, NE, S, E, W
 from tkinter import X, LEFT, RIGHT, BOTH, END
-
 from tkinter.scrolledtext import ScrolledText
 import traceback
 
@@ -42,13 +42,24 @@ logger = logging.getLogger("t2tp")
 
 class App:
 
-    FMT_PROJECT = ("one file per project", "by_project")
-    FMT_AREA = ("one file er area", "py_area")
+    FMT_PROJECT = ("one file per project", "project")
+    FMT_AREA = ("one file per area", "area")
     FMT_ALL = ("all in one", "all")
 
     FORMATS = (FMT_AREA, FMT_PROJECT, FMT_ALL)
 
     TARGET_FORMAT_FRAME_LABEL = "Output as:"
+
+    EXPLANATION = dedent("""\
+        Export your data from the Things 3 database to TaskPaper files.
+    """)
+    EXPORT_EXPLANATION = dedent("""\
+        You will find all exported data in your Downloads folder.
+    """)
+    SELECT_FILE_EXPLANATION = dedent("""\
+        (Note: When you click "Select File" the App will locate your default database automatically.
+        Just click "Open" in the popup to select it.)
+    """)
 
     def __init__(self, master):
 
@@ -69,6 +80,10 @@ class App:
         self.button_convert = Button(buttons_frame, text="Export", command=self.cmd_things2tp)
         self.button_convert.pack(anchor=NW, side=LEFT)
 
+        T = Text(buttons_frame, height=2, width=90, font=("Helvetica", 13, "normal"))
+        T.pack(anchor=NW, padx=10, pady=5)
+        T.insert(END, self.EXPORT_EXPLANATION)
+
         logger_frame = LabelFrame(master, text="Exporter Output:", padx=5, pady=5)
         logger_frame.pack(anchor=NW, fill=X, padx=10, pady=10)
         self.console = ConsoleUi(logger_frame, master)
@@ -77,11 +92,23 @@ class App:
         # source file
         self.filename = StringVar()
 
+        T = Text(frame, height=1, width=90, font=("Helvetica", 14, "normal"))
+        T.pack(anchor=NW, padx=10, pady=10)
+        T.insert(END, self.EXPLANATION)
+
+        # separator
+        Frame(height=2, bd=1, relief=SUNKEN).pack(fill=X, padx=5, pady=5)
+
         source_frame = Frame(frame)
         source_frame.pack(anchor=NW, padx=10, pady=10)
+
         Label(source_frame, text="Things 3 database to export:").pack(side=LEFT)
         Entry(source_frame, text="foobar", textvariable=self.filename).pack(side=LEFT)
         Button(source_frame, text="Select File", command=self.cb_select_file).pack(side=LEFT)
+
+        T = Text(frame, height=2, width=90, font=("Helvetica", 13, "normal"))
+        T.pack(anchor=NW, padx=10, pady=5)
+        T.insert(END, self.SELECT_FILE_EXPLANATION)
 
         # file format
         self.format = StringVar()
@@ -133,32 +160,24 @@ class App:
 
         output_format = self.format.get()
         logger.info("target format: %s" % output_format)
-        if output_format == self.FMT_ALL[1]:
-            flag_combine = False
-            flag_stdout = True
-            # TODO set stdout capture here??
-        elif output_format == self.FMT_PROJECT[1]:
-            flag_combine = False
-            flag_stdout = False
-            pass
-        elif output_format == self.FMT_AREA[1]:
-            flag_combine = True
-            flag_stdout = False
-        else:
+        if output_format not in [self.FMT_ALL[1], self.FMT_PROJECT[1], self.FMT_AREA[1]]:
             logger.error("unknown output format: %s" % output_format)
             return
 
         target = self.output_file.get()
         if not target:
-            target = 'export_data'
+            target = 'Things 3 export'
+        # capture stdout if all-in-one
+        if output_format == self.FMT_ALL[1]:
+            target = export_things.RowObject.FILE_TMPL % target
         target = os.path.join(Path.home(), "Downloads", target)
         logger.info("target: %s" % target)
 
         args = Namespace(database=database,
                          target=target,
-                         combine=flag_combine,
-                         stdout=flag_stdout)
-
+                         format=output_format,
+                         stdout=False,
+                         called_from_gui=True)
         try:
             export_things.export(args)
         except Exception:
@@ -166,6 +185,7 @@ class App:
             logger.error(tb)
         else:
             logger.info("export finished")
+
         logger.info("ready")
 
 
