@@ -20,15 +20,29 @@ Database Structure:
 
 """
 
+DEFAULT_TARGET = 'Things3 export'
+
 
 def export(args):
+    try:
+        args.called_from_gui
+    except:
+        # log to file only if not called from guo
+        logging.basicConfig(filename='export.log', level=logging.ERROR)
 
-    logging.basicConfig(filename='export.log', level=logging.ERROR)
+    if args.format not in [RowObject.FMT_ALL, RowObject.FMT_PROJECT, RowObject.FMT_AREA]:
+        raise Exception("unknown format %s" % args.format)
 
     con = sqlite3.connect(args.database)
 
     con.row_factory = sqlite3.Row
 
+    # reroute stdout
+    if args.format == RowObject.FMT_ALL and not args.stdout:
+        filename = args.target
+        if not filename.endswith('.taskpaper'):
+            filename = RowObject.FILE_TMPL % filename
+        reroute_stdout(filename)
     c = con.cursor()
     no_area = Area(dict(uuid='NULL', title='no area'), con, args)
     no_area.export()
@@ -37,9 +51,23 @@ def export(args):
         a.export()
     con.close()
 
+    if args.format == RowObject.FMT_ALL and not args.stdout:
+        sys.stdout = sys.__stdout__
+
+
+def reroute_stdout(filename, path_prefix=''):
+    print("rerouting standardout to", filename)
+    filename = filename.replace(r'/', '|')
+    if path_prefix:
+        filename = os.path.join(path_prefix, filename)
+    sys.stdout = open(filename, 'w')
+
 
 class RowObject(object):
     PROJECT_TEMPLATE = "\n%(indent)s%(title)s:%(tags)s"
+    FMT_ALL = 'all'
+    FMT_PROJECT = 'project'
+    FMT_AREA = 'area'
 
     def __init__(self, row, con, args, level=0):
         self.row = row
@@ -88,10 +116,7 @@ class RowObject(object):
 
     def reroute_stdout(self, path_prefix):
         filename = self.FILE_TMPL % self.title
-        filename = filename.replace(r'/', '|')
-        if path_prefix:
-            filename = os.path.join(path_prefix, filename)
-        sys.stdout = open(filename, 'w')
+        reroute_stdout(filename, path_prefix)
 
     def makedirs(self):
         if not os.path.exists(self.path):
@@ -165,10 +190,10 @@ class Area(RowObjectWithTags):
     def export(self):
         logging.debug("Area: %s (%s)", self.title, self.uuid)
         self.load_tags_from_db()
-        if self.args.stdout:
+        if args.format == RowObject.FMT_ALL:
             next_level = 1
             print(self.PROJECT_TEMPLATE % self)
-        elif self.args.combine:
+        elif args.format == RowObject.FMT_AREA:
             # reroute stdout to a file for this area
             self.path = self.args.target
             self.makedirs()
@@ -196,7 +221,7 @@ class Area(RowObjectWithTags):
             p = Project(row, self.con, self.args, next_level, self)
             p.export()
 
-        if self.args.combine:
+        if args.format == RowObject.FMT_AREA:
             sys.stdout = sys.__stdout__
 
 
@@ -224,10 +249,10 @@ class Project(TaskObjects):
         logging.debug("Project: %s (%s)", self.title, self.uuid)
         self.load_tags_from_db()
         self.add_attributes()
-        if self.args.combine or self.args.stdout:
-            print(self.PROJECT_TEMPLATE % self)
-        else:
+        if args.format == RowObject.FMT_PROJECT:
             self.reroute_stdout(self.area.path)
+        else:
+            print(self.PROJECT_TEMPLATE % self)
 
         if self.notes:
             self.print_notes()
@@ -237,7 +262,7 @@ class Project(TaskObjects):
         else:
             self.find_and_export_items(Task, Task.TASKS_IN_PROJECT % self.uuid)
 
-        if not self.args.combine:
+        if args.format == RowObject.FMT_PROJECT:
             sys.stdout = sys.__stdout__
 
 
@@ -311,17 +336,17 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Export tasks from Things3 database to TaskPaper.')
     parser.add_argument('--target', dest='target', action='store',
-                        default='export_data',
+                        default=DEFAULT_TARGET,
                         help='output folder (default: export_data')
     parser.add_argument('--db', dest='database', action='store',
                         default='Things.sqlite3',
                         help='path to the Things3 database (default: Things.sqlite3)')
-    parser.add_argument('--combine', dest='combine', action='store_true',
-                        default=False,
-                        help='combine projects of each area into one file (default: one separate file per project')
+    parser.add_argument('--format', dest='format', action='store',
+                        default='project',
+                        help='Define output format(area|project|all): what will be exported into one taskpaper file (default: project')
     parser.add_argument('--stdout', dest='stdout', action='store_true',
                         default=False,
-                        help='to standard output instead of file (overrides combine, default: write to file)')
+                        help='output to standard output instead of file (only works with format=all)')
 
     args = parser.parse_args()
     export(args)
