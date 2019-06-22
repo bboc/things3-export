@@ -190,10 +190,10 @@ class Area(RowObjectWithTags):
     def export(self):
         logging.debug("Area: %s (%s)", self.title, self.uuid)
         self.load_tags_from_db()
-        if args.format == RowObject.FMT_ALL:
+        if self.args.format == RowObject.FMT_ALL:
             next_level = 1
             print(self.PROJECT_TEMPLATE % self)
-        elif args.format == RowObject.FMT_AREA:
+        elif self.args.format == RowObject.FMT_AREA:
             # reroute stdout to a file for this area
             self.path = self.args.target
             self.makedirs()
@@ -221,7 +221,7 @@ class Area(RowObjectWithTags):
             p = Project(row, self.con, self.args, next_level, self)
             p.export()
 
-        if args.format == RowObject.FMT_AREA:
+        if self.args.format == RowObject.FMT_AREA:
             sys.stdout = sys.__stdout__
 
 
@@ -249,7 +249,7 @@ class Project(TaskObjects):
         logging.debug("Project: %s (%s)", self.title, self.uuid)
         self.load_tags_from_db()
         self.add_attributes()
-        if args.format == RowObject.FMT_PROJECT:
+        if self.args.format == RowObject.FMT_PROJECT:
             self.reroute_stdout(self.area.path)
         else:
             print(self.PROJECT_TEMPLATE % self)
@@ -262,7 +262,7 @@ class Project(TaskObjects):
         else:
             self.find_and_export_items(Task, Task.TASKS_IN_PROJECT % self.uuid)
 
-        if args.format == RowObject.FMT_PROJECT:
+        if self.args.format == RowObject.FMT_PROJECT:
             sys.stdout = sys.__stdout__
 
 
