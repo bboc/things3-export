@@ -57,8 +57,8 @@ def export(args):
 
 def reroute_stdout(filename, path_prefix=''):
     print("rerouting standardout to", filename)
-    filename = filename.replace(r'/', '|')
     if path_prefix:
+        filename = filename.replace(r'/', '|')
         filename = os.path.join(path_prefix, filename)
     sys.stdout = open(filename, 'w')
 
