@@ -1,4 +1,5 @@
 app:
+	echo "if the app doesn't build, delete the cache folders in ~/Library/Application Support/pyinstaller"
 	pyinstaller --onefile --log-level WARN --icon=icon.icns --name things2taskpaper --windowed app.py
 debug:
 	-rm -r dist/things2taskpaper-debug.app
