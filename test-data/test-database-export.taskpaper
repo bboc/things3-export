@@ -3,6 +3,10 @@ no area:
 
 	Inbox:
 		- a task in my inbox
+		- Exporting your Data (with Link)
+			https://culturedcode.com/things/support/articles/2982272/
+			Here’s how export your data from Things 3 on Mac and iOS.
+			
 
 	a free floating project: @foo
 		this project has a tag and a note
@@ -46,5 +50,7 @@ this is another area:
 	a project:
 		- a taks that has it all @Errand @due(2019-07-09) @today
 			there's a note
+			and a link
+			https://culturedcode.com/things/support/articles/2981402/
 			- one
 			- two
