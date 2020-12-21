@@ -105,7 +105,9 @@ class RowObject(object):
     URL = re.compile("\<a href=\"(?P<url>.*)?\"\>.*?\<\/a\>")
 
     def print_notes(self):
-        notes = self.notes[27:-7]
+        notes = self.notes
+        if notes.startswith("<note xml:space=\"preserve\">"):
+            notes = notes[27:-7]
         for line in notes.split("\n"):
             line = self.URL.sub(lambda m: m.group('url'), line)
             print('%s%s' % (self.notes_indent, line))
