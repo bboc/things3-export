@@ -1,1 +1,1 @@
-python3 export_things.py --db test-data/Things-testdb.sqlite3 --format all --stdout
+python3 export_things.py --db test-data/Things-testdb.thingsdatabase/main.sqlite --format all --stdout
