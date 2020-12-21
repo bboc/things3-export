@@ -136,7 +136,7 @@ class App:
             widget.destroy()
 
     def cb_select_file(self):
-        filename = filedialog.askopenfilename(initialdir="~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/",
+        filename = filedialog.askopenfilename(initialdir="~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things Database.thingsdatabase/",
                                               title="Select file",
                                               defaultextension='*.sqlite3',
                                               filetypes=(("SQLite3 Files", "*.sqlite3"),
