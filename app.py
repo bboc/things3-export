@@ -47,7 +47,7 @@ class App:
     """)
     SELECT_FILE_EXPLANATION = dedent("""\
         (Note: When you click "Select File" the App will locate your default database automatically.
-        Just click "Open" in the popup to select it.  If the text on the buttons is missing, reseize the window a little bit.)
+        Just click "Open" in the popup to select it.)
     """)
 
     def __init__(self, master):
@@ -240,6 +240,19 @@ class ConsoleUi:
 def main():
     root = tk.Tk()
     App(root)
+
+    # begin workaround code
+    def fix_macos_mojave_button_issue():
+        """See https://stackoverflow.com/questions/52529403/button-text-of-tkinter-does-not-work-in-mojave"""
+        a = root.winfo_geometry().split('+')[0]
+        b = a.split('x')
+        w = int(b[0])
+        h = int(b[1])
+        root.geometry('%dx%d' % (w + 1, h + 1))
+    root.update()
+    root.after(0, fix_macos_mojave_button_issue)
+    # end of workaround code
+
     os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "python" to true' ''')
     root.mainloop()
     root.destroy()
