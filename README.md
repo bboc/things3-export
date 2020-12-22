@@ -2,7 +2,7 @@
 
 Here's a simple App to export from [Things 3 (by Cultured Code)](https://culturedcode.com/things/) to [TaskPaper](https://www.taskpaper.com).
 
-I created this because I discovered that Things is great for capturing ideas, planning my day and reminding me about all the stuff that I don't care about. but need to do anyway. However, for planning and excepting on all my projects, I found that I am much more effective using plain text TaskPaper files, and sometimes also OmniFocus (which imports and exports TaskPaper format). YMMV.
+I created this app because I discovered that for me Things works great for some use cases, but for others I want to use a plain text format: I use Things for capturing taks, ideas and bookmarks, for planning my day and for reminding me about all the stuff that I don't care about, but need to do anyway. For detailed planning, for managing ideas and things like reading lists, I am much more effective using TaskPaper files. So I have set up an area "Export" with several projects that act as buckets for certain topics like ideas, reading, research etc., and roughly every two weeks I use this app to export my Things Inbox and the "Export" area with this app and delete all those tasks in Thinks. This keeps my Things database nice and manageable.
  
 Currently, the exporter has the following features:
 
@@ -12,7 +12,7 @@ Currently, the exporter has the following features:
 - done and trashed items are excluded
 - due dates, start dates, today and someday are added as tags to projects and tasks
 
-Repeating tasks are currently not supported. The exporter was tested with Things 3.9
+Repeating tasks are currently not supported. The exporter was tested with Things 3.13.6.
 
 ## Usage
 
