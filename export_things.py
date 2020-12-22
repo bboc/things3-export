@@ -9,7 +9,11 @@ import sys
 """
 Export Things 3 database to TaskPaper files
 
-Things 3 database is typically at ~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/Things.sqlite3
+Things 3 database can be found at:
+~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things Database.thingsdatabase/main.sqlite
+
+before Things 3.13 it was at 
+~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/Things.sqlite3
 
 Database Structure:
 
@@ -101,7 +105,9 @@ class RowObject(object):
     URL = re.compile("\<a href=\"(?P<url>.*)?\"\>.*?\<\/a\>")
 
     def print_notes(self):
-        notes = self.notes[27:-7]
+        notes = self.notes
+        if notes.startswith("<note xml:space=\"preserve\">"):
+            notes = notes[27:-7]
         for line in notes.split("\n"):
             line = self.URL.sub(lambda m: m.group('url'), line)
             print('%s%s' % (self.notes_indent, line))
@@ -339,8 +345,8 @@ if __name__ == "__main__":
                         default=DEFAULT_TARGET,
                         help='output folder (default: export_data')
     parser.add_argument('--db', dest='database', action='store',
-                        default='Things.sqlite3',
-                        help='path to the Things3 database (default: Things.sqlite3)')
+                        default='main.sqlite',
+                        help='path to the Things3 database (default: main.sqlite)')
     parser.add_argument('--format', dest='format', action='store',
                         default='project',
                         help='Define output format(area|project|all): what will be exported into one taskpaper file (default: project')

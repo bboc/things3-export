@@ -1,1 +1,1 @@
-python3 export_things.py --db ~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application\ Support/Cultured\ Code/Things/Things.sqlite3 $1 $2 $3
+python3 export_things.py --db ~/Library/Group\ Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things\ Database.thingsdatabase/main.sqlite $1 $2 $3

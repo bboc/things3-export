@@ -16,26 +16,15 @@ import os
 from pathlib import Path
 import queue
 from textwrap import dedent
-from tkinter import filedialog
-from tkinter import Tk
-from tkinter import Button
-from tkinter import Entry
-from tkinter import Frame
-from tkinter import Label
-from tkinter import LabelFrame
-from tkinter import StringVar
-from tkinter import SUNKEN
-from tkinter import Text
-from tkinter import Radiobutton
-from tkinter import N, NW, NE, S, E, W
-from tkinter import X, LEFT, RIGHT, BOTH, END
+import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
+
 import traceback
 
 import export_things
 
 # from setup import VERSION
-VERSION = '1.0.rc1'
+VERSION = '1.0.1'
 
 logger = logging.getLogger("t2tp")
 
@@ -69,78 +58,78 @@ class App:
     def build_gui(self, master):
         master.title("Export Things 3 to Taskpaper v%s" % VERSION)
 
-        file_frame = Frame(master)
-        file_frame.pack(anchor=NW, fill=X)
+        file_frame = tk.Frame(master)
+        file_frame.pack(anchor=tk.NW, fill=tk.X)
 
         self.make_file_frame(file_frame)
 
         # buttons: convert
-        buttons_frame = Frame(master)
-        buttons_frame.pack(anchor=NW, fill=X)
-        self.button_convert = Button(buttons_frame, text="Export", command=self.cmd_things2tp)
-        self.button_convert.pack(anchor=NW, side=LEFT)
+        buttons_frame = tk.Frame(master)
+        buttons_frame.pack(anchor=tk.NW, fill=tk.X)
+        self.button_convert = tk.Button(buttons_frame, text="Export", command=self.cmd_things2tp)
+        self.button_convert.pack(anchor=tk.NW, side=tk.LEFT)
 
-        T = Text(buttons_frame, height=2, width=90, font=("Helvetica", 13, "normal"))
-        T.pack(anchor=NW, padx=10, pady=5)
-        T.insert(END, self.EXPORT_EXPLANATION)
+        T = tk.Text(buttons_frame, height=2, width=90, font=("Helvetica", 13, "normal"))
+        T.pack(anchor=tk.NW, padx=10, pady=5)
+        T.insert(tk.END, self.EXPORT_EXPLANATION)
 
-        logger_frame = LabelFrame(master, text="Exporter Output:", padx=5, pady=5)
-        logger_frame.pack(anchor=NW, fill=X, padx=10, pady=10)
+        logger_frame = tk.LabelFrame(master, text="Exporter Output:", padx=5, pady=5)
+        logger_frame.pack(anchor=tk.NW, fill=tk.X, padx=10, pady=10)
         self.console = ConsoleUi(logger_frame, master)
 
     def make_file_frame(self, frame):
         # source file
-        self.filename = StringVar()
+        self.filename = tk.StringVar()
 
-        T = Text(frame, height=1, width=90, font=("Helvetica", 14, "normal"))
-        T.pack(anchor=NW, padx=10, pady=10)
-        T.insert(END, self.EXPLANATION)
+        T = tk.Text(frame, height=1, width=90, font=("Helvetica", 14, "normal"))
+        T.pack(anchor=tk.NW, padx=10, pady=10)
+        T.insert(tk.END, self.EXPLANATION)
 
         # separator
-        Frame(height=2, bd=1, relief=SUNKEN).pack(fill=X, padx=5, pady=5)
+        tk.Frame(height=2, bd=1, relief=tk.SUNKEN).pack(fill=tk.X, padx=5, pady=5)
 
-        source_frame = Frame(frame)
-        source_frame.pack(anchor=NW, padx=10, pady=10)
+        source_frame = tk.Frame(frame)
+        source_frame.pack(anchor=tk.NW, padx=10, pady=10)
 
-        Label(source_frame, text="Things 3 database to export:").pack(side=LEFT)
-        Entry(source_frame, text="foobar", textvariable=self.filename).pack(side=LEFT)
-        Button(source_frame, text="Select File", command=self.cb_select_file).pack(side=LEFT)
+        tk.Label(source_frame, text="Things 3 database to export:").pack(side=tk.LEFT)
+        tk.Entry(source_frame, text="foobar", textvariable=self.filename).pack(side=tk.LEFT)
+        tk.Button(source_frame, text="Select File", command=self.cb_select_file).pack(side=tk.LEFT)
 
-        T = Text(frame, height=2, width=90, font=("Helvetica", 13, "normal"))
-        T.pack(anchor=NW, padx=10, pady=5)
-        T.insert(END, self.SELECT_FILE_EXPLANATION)
+        T = tk.Text(frame, height=2, width=90, font=("Helvetica", 13, "normal"))
+        T.pack(anchor=tk.NW, padx=10, pady=5)
+        T.insert(tk.END, self.SELECT_FILE_EXPLANATION)
 
         # file format
-        self.format = StringVar()
-        self.format_frame = Frame(frame)
-        self.format_frame.pack(anchor=NW, padx=10, pady=10)
+        self.format = tk.StringVar()
+        self.format_frame = tk.Frame(frame)
+        self.format_frame.pack(anchor=tk.NW, padx=10, pady=10)
         self._make_format_frame(self.format_frame, self.TARGET_FORMAT_FRAME_LABEL, self.format, self.FMT_AREA[1], self.FORMATS)
 
         # output file
-        self.output_file = StringVar()
-        output_frame = Frame(frame)
-        output_frame.pack(anchor=NW, padx=10, pady=10)
-        Label(output_frame, text="Output file ('export_data' if empty):").pack(side=LEFT)
-        self.entry_target_file = Entry(output_frame, text="foobar", textvariable=self.output_file)
-        self.entry_target_file.pack(side=LEFT, padx=10, pady=10)
+        self.output_file = tk.StringVar()
+        output_frame = tk.Frame(frame)
+        output_frame.pack(anchor=tk.NW, padx=10, pady=10)
+        tk.Label(output_frame, text="Output file ('export_data' if empty):").pack(side=tk.LEFT)
+        self.entry_target_file = tk.Entry(output_frame, text="foobar", textvariable=self.output_file)
+        self.entry_target_file.pack(side=tk.LEFT, padx=10, pady=10)
 
     def _make_format_frame(self, frame, label, variable, default, available_formats):
         """Set available output formats."""
         variable.set(default)
-        Label(frame, text=label).pack(side=LEFT)
+        tk.Label(frame, text=label).pack(side=tk.LEFT)
         for text, mode in available_formats:
-            Radiobutton(frame, text=text, variable=variable, value=mode).pack(side=LEFT)
+            tk.Radiobutton(frame, text=text, variable=variable, value=mode).pack(side=tk.LEFT)
 
     def clean_frame(self, frame):
         for widget in frame.winfo_children():
             widget.destroy()
 
     def cb_select_file(self):
-        filename = filedialog.askopenfilename(initialdir="~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application Support/Cultured Code/Things/",
-                                              title="Select file",
-                                              defaultextension='*.sqlite3',
-                                              filetypes=(("SQLite3 Files", "*.sqlite3"),
-                                                         ("SQLite Files", "*.sqlite")))
+        filename = tk.filedialog.askopenfilename(initialdir="~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things Database.thingsdatabase/",
+                                                 title="Select file",
+                                                 defaultextension='*.sqlite3',
+                                                 filetypes=(("SQLite3 Files", "*.sqlite3"),
+                                                            ("SQLite Files", "*.sqlite")))
         self.filename.set(filename)
 
     def cmd_things2tp(self):
@@ -209,7 +198,7 @@ class ConsoleUi:
         self.frame = frame
         # Create a ScrolledText wdiget
         self.scrolled_text = ScrolledText(frame, state='disabled', height=12)
-        self.scrolled_text.grid(row=0, column=0, sticky=(N, S, W, E))
+        self.scrolled_text.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W, tk.E))
         self.scrolled_text.configure(font='TkFixedFont')
         self.scrolled_text.tag_config('INFO', foreground='black')
         self.scrolled_text.tag_config('DEBUG', foreground='gray')
@@ -224,17 +213,17 @@ class ConsoleUi:
         logger.addHandler(self.queue_handler)
         # Start polling messages from the queue
         self.frame.after(100, self.poll_log_queue)
-        self.scrolled_text.pack(fill=BOTH, expand=1)
-        self.button_quit = Button(self.frame, text="Quit", fg="red", command=master.quit)
-        self.button_quit.pack(anchor=NE, side=RIGHT)
+        self.scrolled_text.pack(fill=tk.BOTH, expand=1)
+        self.button_quit = tk.Button(self.frame, text="Quit", fg="red", command=master.quit)
+        self.button_quit.pack(anchor=tk.NE, side=tk.RIGHT)
 
     def display(self, record):
         msg = self.queue_handler.format(record)
         self.scrolled_text.configure(state='normal')
-        self.scrolled_text.insert(END, msg + '\n', record.levelname)
+        self.scrolled_text.insert(tk.END, msg + '\n', record.levelname)
         self.scrolled_text.configure(state='disabled')
         # Autoscroll to the bottom
-        self.scrolled_text.yview(END)
+        self.scrolled_text.yview(tk.END)
 
     def poll_log_queue(self):
         # Check every 100ms if there is a new message in the queue to display
@@ -249,8 +238,21 @@ class ConsoleUi:
 
 
 def main():
-    root = Tk()
+    root = tk.Tk()
     App(root)
+
+    # begin workaround code
+    def fix_macos_mojave_button_issue():
+        """See https://stackoverflow.com/questions/52529403/button-text-of-tkinter-does-not-work-in-mojave"""
+        a = root.winfo_geometry().split('+')[0]
+        b = a.split('x')
+        w = int(b[0])
+        h = int(b[1])
+        root.geometry('%dx%d' % (w + 1, h + 1))
+    root.update()
+    root.after(0, fix_macos_mojave_button_issue)
+    # end of workaround code
+
     os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "python" to true' ''')
     root.mainloop()
     root.destroy()

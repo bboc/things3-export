@@ -76,8 +76,8 @@ If you prefer one TaskPaper file per area, you can add the option `--format area
 #### Work on a copy of the database
 
 Copy the things database to the same folder where you downloaded the script:
-
-`$ cp ~/Library/Containers/com.culturedcode.ThingsMac/Data/Library/Application\ Support/Cultured\ Code/Things/Things.sqlite3 .` 
+    
+`$ cp ~/Library/Group\ Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things\ Database.thingsdatabase/main.sqlite .` 
 
 then run the exporter:
 
@@ -87,3 +87,8 @@ then run the exporter:
 ### Restore a database backup in Things 3
 
 If you, like me, play around with your Things database and accidentally sync changes you don't want back to the Things cloud, [here's how to restore a backup database](https://support.culturedcode.com/customer/en/portal/articles/2803595-restoring-from-a-backup)
+
+## Changelog 
+
+- 2020-12-20: added support for new Database location in Things 3.13+
+
