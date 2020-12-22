@@ -30,12 +30,13 @@ from tkinter import Radiobutton
 from tkinter import N, NW, NE, S, E, W
 from tkinter import X, LEFT, RIGHT, BOTH, END
 from tkinter.scrolledtext import ScrolledText
+
 import traceback
 
 import export_things
 
 # from setup import VERSION
-VERSION = '1.0.rc1'
+VERSION = '1.0.1'
 
 logger = logging.getLogger("t2tp")
 
@@ -58,7 +59,7 @@ class App:
     """)
     SELECT_FILE_EXPLANATION = dedent("""\
         (Note: When you click "Select File" the App will locate your default database automatically.
-        Just click "Open" in the popup to select it.)
+        Just click "Open" in the popup to select it.  If the text on the buttons is missing, reseize the window a little bit.)
     """)
 
     def __init__(self, master):
