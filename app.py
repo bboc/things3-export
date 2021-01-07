@@ -50,8 +50,7 @@ class App:
         You will find all exported data in your Downloads folder.
     """)
     SELECT_FILE_EXPLANATION = dedent("""\
-        (Note: When you click "Select File" the App will locate your default database automatically.
-        Just click "Open" in the popup to select it.)
+        (Note: When you leave this blank, the App will locate your default database automatically)
     """)
 
     def __init__(self, master):
