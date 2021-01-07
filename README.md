@@ -24,9 +24,19 @@ Run the app, you will see this screen:
 
 ![](app-screenshot.png)
 
-1. **Select the correct database**: Click "Select File" to select your things database. The dialog should open the correct folder, so you just need to select the database.
-2. **Select an output format**: all in one file, one file per area, or one file per project
-3. (optional) **Enter name for the output** this will be used as a name of the export directory in your Downloads folder (or as a filename in case you want all in one file). If you enter nothing, the default is "Things 3 export"
+Depending on your system, MacOS may present two dialogs to you, where it asks you for the permission to control Finder and System-Events. You have to grant these permissions for the app to work:
+
+![](dialog-control-finder.png)
+
+![](dialog-control-system-events.png)
+
+If you just click the Export button, the app will export your Things 3 database to a folder "Things 3 export" in your Downloads folder, with one Taskpaper-file per are. 
+
+Here's what you can do if you're not happy with the default behavior:
+
+1. (optional) **Select database**: Leave this empty if you want to use the default Things 3 database location. Otherwise click "Select File" to select another Things 3 database, you need to locate the file `main.sqklite` inside the thingsdatabase-bundle.
+2. (optional) **Select an output format**: all in one file, one file per area (default), or one file per project
+3. (optional) **Enter name for the output** this will be used as a name of the export directory in your Downloads folder (or as a filename in case you want all in one file). If you enter nothing, the default will be "Things 3 export"
 4. **Click Export**: you will see some output in the output window
 
 That's it. Go to your Downloads folder to see the export.
@@ -90,5 +100,6 @@ If you, like me, play around with your Things database and accidentally sync cha
 
 ## Changelog 
 
+- 2021-01-07: fixed a bug that prevented opening the file dialog for selecting the database
 - 2020-12-20: added support for new Database location in Things 3.13+
 
