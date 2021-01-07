@@ -32,6 +32,8 @@ logger = logging.getLogger("t2tp")
 
 DATABASE_DIR = '~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things Database.thingsdatabase/'
 DATABASE_NAME = 'main.sqlite'
+DEFAULT_TARGET = 'Things 3 export'
+
 
 class App:
 
@@ -112,7 +114,7 @@ class App:
         self.output_file = tk.StringVar()
         output_frame = tk.Frame(frame)
         output_frame.pack(anchor=tk.NW, padx=10, pady=10)
-        tk.Label(output_frame, text="Output file ('export_data' if empty):").pack(side=tk.LEFT)
+        tk.Label(output_frame, text="Output file ('%s' if empty):" % DEFAULT_TARGET).pack(side=tk.LEFT)
         self.entry_target_file = tk.Entry(output_frame, text="foobar", textvariable=self.output_file)
         self.entry_target_file.pack(side=tk.LEFT, padx=10, pady=10)
 
@@ -128,7 +130,7 @@ class App:
             widget.destroy()
 
     def cb_select_file(self):
-        filename = tk.filedialog.askopenfilename(initialdir=DATABASE_DIR,
+        filename = tk.filedialog.askopenfilename(initialdir=os.path.join(Path.home(), "Documents"),
                                                  title="Select file",
                                                  defaultextension='*.sqlite3',
                                                  filetypes=(("SQLite3 Files", "*.sqlite3"),
