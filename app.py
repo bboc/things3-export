@@ -160,7 +160,7 @@ class App:
 
         target = self.output_file.get()
         if not target:
-            target = 'Things 3 export'
+            target = DEFAULT_TARGET
         # capture stdout if all-in-one
         if output_format == self.FMT_ALL[1]:
             target = export_things.RowObject.FILE_TMPL % target
