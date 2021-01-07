@@ -18,16 +18,20 @@ import queue
 from textwrap import dedent
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
+from tkinter import filedialog
 
 import traceback
 
 import export_things
 
 # from setup import VERSION
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 logger = logging.getLogger("t2tp")
 
+
+DATABASE_DIR = '~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things Database.thingsdatabase/'
+DATABASE_NAME = 'main.sqlite'
 
 class App:
 
@@ -125,7 +129,7 @@ class App:
             widget.destroy()
 
     def cb_select_file(self):
-        filename = tk.filedialog.askopenfilename(initialdir="~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac/Things Database.thingsdatabase/",
+        filename = tk.filedialog.askopenfilename(initialdir=DATABASE_DIR,
                                                  title="Select file",
                                                  defaultextension='*.sqlite3',
                                                  filetypes=(("SQLite3 Files", "*.sqlite3"),
@@ -140,9 +144,10 @@ class App:
 
         database = self.filename.get()
         if not database:
-            logger.error("No database file set!!")
-            return
-        elif not os.path.exists(database):
+            database = os.path.join(os.path.expanduser(DATABASE_DIR), DATABASE_NAME)
+            logger.info("no databases selected, setting default database")
+
+        if not os.path.exists(database):
             logger.error("database '%s' does not exist!" % database)
             return
         logger.info("database: %s" % database)
