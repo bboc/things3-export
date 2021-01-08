@@ -19,6 +19,7 @@ from textwrap import dedent
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 from tkinter import filedialog
+from tkinter import ttk
 
 import traceback
 
@@ -34,8 +35,7 @@ DATABASE_DIR = '~/Library/Group Containers/JLMPQHK86H.com.culturedcode.ThingsMac
 DATABASE_NAME = 'main.sqlite'
 DEFAULT_TARGET = 'Things 3 export'
 
-BG_COL_1 = "#9aadeb"
-BG_COL_2 = "#d4e6dd"
+BG_COL_1 = "#524790"
 
 class App:
 
@@ -62,75 +62,78 @@ class App:
 
         self.source_type = None
         master.geometry('600x700')
+        self.setup_styles()
         self.build_gui(master)
+
+    def setup_styles(self):
+
+        s = ttk.Style()
+        s.theme_use('aqua')
+        s.configure('Export.TButton', padding=5, foreground=BG_COL_1, font=("Helvetica", 16, "normal"))
+        s.configure('Quit.TButton', padding=5, foreground="#444444", font=("Helvetica", 14, "normal"))
+        s.configure('Header.TLabel', height=1, width=90, font=("Helvetica", 18, "normal"), background=BG_COL_1, bd=15)
 
     def build_gui(self, master):
         master.title("Export Things 3 to Taskpaper v%s" % VERSION)
 
         # convert button and basic explanation: convert
-        upper_frame = tk.Frame(master, background=BG_COL_1, bd=10)
+        upper_frame = ttk.Frame(master)
         upper_frame.pack(fill=tk.BOTH, expand=True)
 
-        T = tk.Text(upper_frame, height=1, width=90, font=("Helvetica", 18, "normal"), background=BG_COL_1, bd=15)
+        T = ttk.Label(upper_frame, text=self.EXPLANATION, style='Header.TLabel')
         T.pack(anchor=tk.NW, padx=10, pady=10)
-        T.insert(tk.END, self.EXPLANATION)
         T.config(state='disabled')
 
-        T = tk.Text(upper_frame, height=2, width=90, font=("Helvetica", 13, "normal"), background=BG_COL_1, bd=10)
+        T = ttk.Label(upper_frame, text=self.EXPORT_EXPLANATION)
         T.pack(anchor=tk.N, expand=True, fill=tk.BOTH, padx=10, pady=5)
-        T.insert(tk.END, self.EXPORT_EXPLANATION)
         T.config(state='disabled')
 
         # file format
         self.format = tk.StringVar()
-        self.format_frame = tk.Frame(upper_frame, background=BG_COL_1)
-        self.format_frame.pack(anchor=tk.NW, padx=10, pady=10)
-        self._make_format_frame(self.format_frame, self.TARGET_FORMAT_FRAME_LABEL, self.format, self.FMT_AREA[1], self.FORMATS)
+        ff = ttk.Frame(upper_frame)
+        ff.pack(anchor=tk.NW, padx=10, pady=10)
+        self._make_format_frame(ff, self.TARGET_FORMAT_FRAME_LABEL, self.format, self.FMT_AREA[1], self.FORMATS)
 
-        self.button_convert = tk.Button(upper_frame, text="EXPORT", command=self.cmd_things2tp, font=("Helvetica", 13, "normal"))
-        self.button_convert.pack(anchor=tk.NW, side=tk.LEFT, padx=5, pady=5)
+        export = ttk.Button(upper_frame, text="EXPORT", command=self.cmd_things2tp, style="Export.TButton")
+        export.pack(anchor=tk.NW, side=tk.LEFT, padx=5, pady=5)
 
-        # separator
-        tk.Frame(height=1, bd=2, relief=tk.FLAT, background=BG_COL_2).pack(fill=tk.X, padx=5, pady=5)
+        quit = ttk.Button(upper_frame, text="QUIT", command=master.quit, style='Quit.TButton')
+        quit.pack(anchor=tk.NE, side=tk.RIGHT, padx=5, pady=5)
 
-        file_frame = tk.Frame(master, background=BG_COL_2)
-        file_frame.pack(fill=tk.BOTH, expand=True)
+        options_frame = tk.LabelFrame(master, text="More Options:", padx=5, pady=5)
+        options_frame.pack(anchor=tk.NW, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        self.make_lower_frame(file_frame)
+        self.make_options_frame(options_frame)
 
-        logger_frame = tk.LabelFrame(master, text="Exporter Output:", padx=5, pady=5, background=BG_COL_2)
+        logger_frame = tk.LabelFrame(master, text="Exporter Output:", padx=5, pady=5)
         logger_frame.pack(anchor=tk.NW, fill=tk.X, padx=10, pady=10)
         self.console = ConsoleUi(logger_frame, master)
 
-    def make_lower_frame(self, frame):
+    def make_options_frame(self, frame):
         # source file
         self.filename = tk.StringVar()
 
-        T = tk.Text(frame, height=1, width=90, font=("Helvetica", 15, "normal"), background=BG_COL_2)
-        T.pack(anchor=tk.NW, padx=5, pady=5)
-        T.insert(tk.END, self.OPTIONS_EXPLANATION)
-
         # output file
         self.output_file = tk.StringVar()
-        output_frame = tk.Frame(frame, background=BG_COL_2)
+        output_frame = ttk.Frame(frame)
         output_frame.pack(anchor=tk.NW, padx=10, pady=10)
-        tk.Label(output_frame, text="Output file ('%s' if empty):" % DEFAULT_TARGET, background=BG_COL_2).pack(side=tk.LEFT)
-        self.entry_target_file = tk.Entry(output_frame, text="foobar", textvariable=self.output_file, background=BG_COL_2)
+        ttk.Label(output_frame, text="Output file ('%s' if empty):" % DEFAULT_TARGET).pack(side=tk.LEFT)
+        self.entry_target_file = ttk.Entry(output_frame, text="foobar", textvariable=self.output_file)
         self.entry_target_file.pack(side=tk.LEFT, padx=10, pady=10)
 
-        source_frame = tk.Frame(frame, background=BG_COL_2)
+        source_frame = ttk.Frame(frame)
         source_frame.pack(anchor=tk.NW, padx=10, pady=10)
 
-        tk.Label(source_frame, text="Select custom databases:", background=BG_COL_2).pack(side=tk.LEFT)
-        tk.Entry(source_frame, text="foobar", textvariable=self.filename, background=BG_COL_2).pack(side=tk.LEFT)
-        tk.Button(source_frame, text="Select File", command=self.cb_select_file, background=BG_COL_2).pack(side=tk.LEFT)
+        ttk.Label(source_frame, text="Select custom databases:").pack(side=tk.LEFT)
+        ttk.Entry(source_frame, text="foobar", textvariable=self.filename).pack(side=tk.LEFT)
+        ttk.Button(source_frame, text="Select File", command=self.cb_select_file).pack(side=tk.LEFT)
 
     def _make_format_frame(self, frame, label, variable, default, available_formats):
         """Set available output formats."""
         variable.set(default)
-        tk.Label(frame, text=label, background=BG_COL_1).pack(side=tk.LEFT)
+        ttk.Label(frame, text=label).pack(side=tk.LEFT)
         for text, mode in available_formats:
-            tk.Radiobutton(frame, text=text, variable=variable, value=mode, background=BG_COL_1).pack(side=tk.LEFT)
+            ttk.Radiobutton(frame, text=text, variable=variable, value=mode).pack(side=tk.LEFT)
 
     def clean_frame(self, frame):
         for widget in frame.winfo_children():
@@ -210,7 +213,7 @@ class ConsoleUi:
     def __init__(self, frame, master):
         self.frame = frame
         # Create a ScrolledText wdiget
-        self.scrolled_text = ScrolledText(frame, state='disabled', height=12, background=BG_COL_2)
+        self.scrolled_text = ScrolledText(frame, state='disabled', height=12)
         self.scrolled_text.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.W, tk.E))
         self.scrolled_text.configure(font='TkFixedFont')
         self.scrolled_text.tag_config('INFO', foreground='black')
@@ -227,8 +230,8 @@ class ConsoleUi:
         # Start polling messages from the queue
         self.frame.after(100, self.poll_log_queue)
         self.scrolled_text.pack(fill=tk.BOTH, expand=1)
-        self.button_quit = tk.Button(self.frame, text="Quit", fg="red", command=master.quit)
-        self.button_quit.pack(anchor=tk.NE, side=tk.RIGHT)
+        # self.button_quit = tk.Button(self.frame, text="Quit", fg="red", command=master.quit)
+        # self.button_quit.pack(anchor=tk.NE, side=tk.RIGHT)
 
     def display(self, record):
         msg = self.queue_handler.format(record)
