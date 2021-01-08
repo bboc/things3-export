@@ -32,15 +32,14 @@ Depending on your system, MacOS may present two dialogs to you, where it asks yo
 
 If you just click the button "EXPORT", the app will export your Things 3 database to a folder "Things 3 export" in your Downloads folder, with one Taskpaper-file per are. 
 
-Here's a brief explanation of the options and other interface elements:
+Here's a brief explanation of the options and other interface elements, from top to bottom:
 
-- **Export Button**: exports your things database with the selected options
-
-2. **Output as**: Select one of three output formats – all in one Taskpaper file, one Taskpaper file per area (default), or one Taskpapaer file for each project
-- **Output file** (optional) this will be used as a name of the export directory in your Downloads folder (or as a filename in case you want all in one file). If you enter nothing, the default will be "Things 3 export"
-- (optional) **Select custom database**: Leave this empty if you want to use the default Things 3 database location. Otherwise click "Select File" to select another Things 3 database, you need to locate the file `main.sqklite` inside the thingsdatabase-bundle.
+- **Output as**: Select one of three output formats – all in one Taskpaper file, one Taskpaper file per area (default), or one Taskpapaer file for each project
+- **EXPORT**: exports your things database with the selected options
+- **Output file**: (optional) this will be used as a name of the export directory in your Downloads folder (or as a filename in case you want all in one file). If you enter nothing, the default will be "Things 3 export"
+- **Select custom database**: (optional) Leave this empty if you want to use the default Things 3 database location. Otherwise click "Select File" to select another Things 3 database, you need to locate the file `main.sqklite` inside the thingsdatabase-bundle.
 - **Exporter Output**: Here you will see what's happening during the export, sometimes helpful if things are not going according to plan.
-- **Quit button**: Close the app. 
+- **Quit**: Close the app. 
 
 That's it. Go to your Downloads folder to see the export.
 
@@ -103,6 +102,9 @@ If you, like me, play around with your Things database and accidentally sync cha
 
 ## Changelog 
 
-- 2021-01-07: fixed a bug that prevented opening the file dialog for selecting the database
-- 2020-12-20: added support for new Database location in Things 3.13+
-
+- v 1.0.2. (2021-01-08): 
+    -   re-arranged the GUI for better usability
+    -   default Things 3 database is now automatically selected 
+    -   fixed a bug that prevented opening the file dialog for selecting the database
+-   v1.0.1 (2020-12-20)
+    -   added support for new Database location in Things 3.13+
