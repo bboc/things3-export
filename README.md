@@ -103,7 +103,7 @@ If you, like me, play around with your Things database and accidentally sync cha
 ## Changelog 
 
 - v 1.0.2. (2021-01-08): 
-    -   re-arranged the GUI for better usability
+    -   re-designed the GUI for better usability
     -   default Things 3 database is now automatically selected 
     -   fixed a bug that prevented opening the file dialog for selecting the database
 -   v1.0.1 (2020-12-20)
