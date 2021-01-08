@@ -30,14 +30,17 @@ Depending on your system, MacOS may present two dialogs to you, where it asks yo
 
 ![](dialog-control-system-events.png)
 
-If you just click the Export button, the app will export your Things 3 database to a folder "Things 3 export" in your Downloads folder, with one Taskpaper-file per are. 
+If you just click the button "EXPORT", the app will export your Things 3 database to a folder "Things 3 export" in your Downloads folder, with one Taskpaper-file per are. 
 
-Here's what you can do if you're not happy with the default behavior:
+Here's a brief explanation of the options and other interface elements:
 
-1. (optional) **Select database**: Leave this empty if you want to use the default Things 3 database location. Otherwise click "Select File" to select another Things 3 database, you need to locate the file `main.sqklite` inside the thingsdatabase-bundle.
-2. (optional) **Select an output format**: all in one file, one file per area (default), or one file per project
-3. (optional) **Enter name for the output** this will be used as a name of the export directory in your Downloads folder (or as a filename in case you want all in one file). If you enter nothing, the default will be "Things 3 export"
-4. **Click Export**: you will see some output in the output window
+- **Export Button**: exports your things database with the selected options
+
+2. **Output as**: Select one of three output formats – all in one Taskpaper file, one Taskpaper file per area (default), or one Taskpapaer file for each project
+- **Output file** (optional) this will be used as a name of the export directory in your Downloads folder (or as a filename in case you want all in one file). If you enter nothing, the default will be "Things 3 export"
+- (optional) **Select custom database**: Leave this empty if you want to use the default Things 3 database location. Otherwise click "Select File" to select another Things 3 database, you need to locate the file `main.sqklite` inside the thingsdatabase-bundle.
+- **Exporter Output**: Here you will see what's happening during the export, sometimes helpful if things are not going according to plan.
+- **Quit button**: Close the app. 
 
 That's it. Go to your Downloads folder to see the export.
 
