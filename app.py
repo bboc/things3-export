@@ -61,6 +61,7 @@ class App:
     def __init__(self, master):
 
         self.source_type = None
+        master.geometry('600x700')
         self.build_gui(master)
 
     def build_gui(self, master):
@@ -70,12 +71,15 @@ class App:
         upper_frame = tk.Frame(master, background=BG_COL_1, bd=10)
         upper_frame.pack(fill=tk.BOTH, expand=True)
 
-        T = tk.Text(upper_frame, height=1, width=90, font=("Helvetica", 18, "normal"), background=BG_COL_1, bd=15,)
+        T = tk.Text(upper_frame, height=1, width=90, font=("Helvetica", 18, "normal"), background=BG_COL_1, bd=15)
         T.pack(anchor=tk.NW, padx=10, pady=10)
         T.insert(tk.END, self.EXPLANATION)
+        T.config(state='disabled')
+
         T = tk.Text(upper_frame, height=2, width=90, font=("Helvetica", 13, "normal"), background=BG_COL_1, bd=10)
         T.pack(anchor=tk.N, expand=True, fill=tk.BOTH, padx=10, pady=5)
         T.insert(tk.END, self.EXPORT_EXPLANATION)
+        T.config(state='disabled')
 
         # file format
         self.format = tk.StringVar()
