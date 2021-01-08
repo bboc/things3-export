@@ -49,10 +49,11 @@ class App:
         Export your data from the Things 3 database to TaskPaper files.
     """)
     EXPORT_EXPLANATION = dedent("""\
+        Please close Things 3 before exporting the database!
         You will find all exported data in your Downloads folder.
     """)
-    SELECT_FILE_EXPLANATION = dedent("""\
-        (Note: When you leave this blank, the App will locate your default database automatically)
+    OPTIONS_EXPLANATION = dedent("""\
+        More options:
     """)
 
     def __init__(self, master):
@@ -63,20 +64,33 @@ class App:
     def build_gui(self, master):
         master.title("Export Things 3 to Taskpaper v%s" % VERSION)
 
+        # convert button and basic explanation: convert
+        buttons_frame = tk.Frame(master)
+        buttons_frame.pack(fill=tk.BOTH, expand=True)
+
+        T = tk.Text(buttons_frame, height=1, width=90, font=("Helvetica", 16, "normal"))
+        T.pack(anchor=tk.NW, padx=10, pady=10)
+        T.insert(tk.END, self.EXPLANATION)
+        T = tk.Text(buttons_frame, height=2, width=90, font=("Helvetica", 13, "normal"))
+        T.pack(anchor=tk.N, expand=True, fill=tk.BOTH, padx=10, pady=5)
+        T.insert(tk.END, self.EXPORT_EXPLANATION)
+
+        # file format
+        self.format = tk.StringVar()
+        self.format_frame = tk.Frame(buttons_frame)
+        self.format_frame.pack(anchor=tk.NW, padx=10, pady=10)
+        self._make_format_frame(self.format_frame, self.TARGET_FORMAT_FRAME_LABEL, self.format, self.FMT_AREA[1], self.FORMATS)
+
+        self.button_convert = tk.Button(buttons_frame, text="EXPORT", command=self.cmd_things2tp, font=("Helvetica", 13, "normal"), background="#00B0B0", foreground="white")
+        self.button_convert.pack(anchor=tk.NW, side=tk.LEFT, padx=5, pady=5)
+
+        # separator
+        tk.Frame(height=2, bd=1, relief=tk.SUNKEN).pack(fill=tk.X, padx=5, pady=5)
+
         file_frame = tk.Frame(master)
-        file_frame.pack(anchor=tk.NW, fill=tk.X)
+        file_frame.pack(fill=tk.BOTH, expand=True)
 
         self.make_file_frame(file_frame)
-
-        # buttons: convert
-        buttons_frame = tk.Frame(master)
-        buttons_frame.pack(anchor=tk.NW, fill=tk.X)
-        self.button_convert = tk.Button(buttons_frame, text="Export", command=self.cmd_things2tp)
-        self.button_convert.pack(anchor=tk.NW, side=tk.LEFT)
-
-        T = tk.Text(buttons_frame, height=2, width=90, font=("Helvetica", 13, "normal"))
-        T.pack(anchor=tk.NW, padx=10, pady=5)
-        T.insert(tk.END, self.EXPORT_EXPLANATION)
 
         logger_frame = tk.LabelFrame(master, text="Exporter Output:", padx=5, pady=5)
         logger_frame.pack(anchor=tk.NW, fill=tk.X, padx=10, pady=10)
@@ -86,29 +100,9 @@ class App:
         # source file
         self.filename = tk.StringVar()
 
-        T = tk.Text(frame, height=1, width=90, font=("Helvetica", 14, "normal"))
-        T.pack(anchor=tk.NW, padx=10, pady=10)
-        T.insert(tk.END, self.EXPLANATION)
-
-        # separator
-        tk.Frame(height=2, bd=1, relief=tk.SUNKEN).pack(fill=tk.X, padx=5, pady=5)
-
-        source_frame = tk.Frame(frame)
-        source_frame.pack(anchor=tk.NW, padx=10, pady=10)
-
-        tk.Label(source_frame, text="Things 3 database to export:").pack(side=tk.LEFT)
-        tk.Entry(source_frame, text="foobar", textvariable=self.filename).pack(side=tk.LEFT)
-        tk.Button(source_frame, text="Select File", command=self.cb_select_file).pack(side=tk.LEFT)
-
-        T = tk.Text(frame, height=2, width=90, font=("Helvetica", 13, "normal"))
-        T.pack(anchor=tk.NW, padx=10, pady=5)
-        T.insert(tk.END, self.SELECT_FILE_EXPLANATION)
-
-        # file format
-        self.format = tk.StringVar()
-        self.format_frame = tk.Frame(frame)
-        self.format_frame.pack(anchor=tk.NW, padx=10, pady=10)
-        self._make_format_frame(self.format_frame, self.TARGET_FORMAT_FRAME_LABEL, self.format, self.FMT_AREA[1], self.FORMATS)
+        T = tk.Text(frame, height=1, width=90, font=("Helvetica", 15, "normal"))
+        T.pack(anchor=tk.NW, padx=5, pady=5)
+        T.insert(tk.END, self.OPTIONS_EXPLANATION)
 
         # output file
         self.output_file = tk.StringVar()
@@ -117,6 +111,13 @@ class App:
         tk.Label(output_frame, text="Output file ('%s' if empty):" % DEFAULT_TARGET).pack(side=tk.LEFT)
         self.entry_target_file = tk.Entry(output_frame, text="foobar", textvariable=self.output_file)
         self.entry_target_file.pack(side=tk.LEFT, padx=10, pady=10)
+
+        source_frame = tk.Frame(frame)
+        source_frame.pack(anchor=tk.NW, padx=10, pady=10)
+
+        tk.Label(source_frame, text="Select custom databases:").pack(side=tk.LEFT)
+        tk.Entry(source_frame, text="foobar", textvariable=self.filename).pack(side=tk.LEFT)
+        tk.Button(source_frame, text="Select File", command=self.cb_select_file).pack(side=tk.LEFT)
 
     def _make_format_frame(self, frame, label, variable, default, available_formats):
         """Set available output formats."""
